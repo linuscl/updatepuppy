@@ -42,9 +42,6 @@ cut -d\| -f 2,3 /root/.packages/user-installed-packages | grep -v '^$' > /tmp/pa
 cut -d\| -f 2,3 /root/.packages/woof-installed-packages | grep -v '^$' >> /tmp/packages-install
 cut -d\| -f 2,3 /root/.packages/layers-installed-packages | grep -v '^$' >> /tmp/packages-install
 
-cut -d\| -f 2 /root/.packages/Packages-puppy-2-official | grep -v '^$' > /tmp/packages-puppy-1
-cut -d\| -f 2 /root/.packages/Packages-puppy-3-official | grep -v '^$' > /tmp/packages-puppy-2
-cut -d\| -f 2 /root/.packages/Packages-puppy-4-official | grep -v '^$' > /tmp/packages-puppy-3
 cut -d\| -f 2 /root/.packages/Packages-puppy-5-official | grep -v '^$' > /tmp/packages-puppy-4
 cut -d\| -f 2 /root/.packages/Packages-puppy-slacko-official | grep -v '^$' > /tmp/packages-puppy-5
 cut -d\| -f 2 /root/.packages/Packages-puppy-slacko14-official | grep -v '^$' > /tmp/packages-puppy-6
@@ -52,18 +49,13 @@ cut -d\| -f 2 /root/.packages/Packages-puppy-common-official | grep -v '^$' > /t
 cut -d\| -f 2 /root/.packages/Packages-puppy-noarch-official | grep -v '^$' > /tmp/packages-puppy-8
 
 FIRST=$(head -n 1 /tmp/packages-install | cut -d\| -f 1)
-echo $FIRST
+version=$(head -n 1 /tmp/packages-install | cut -d\| -f 2)
+
 ausgabegrep=$(grep -n -w $FIRST /tmp/packages-puppy-*)
 
 file=$(echo $ausgabegrep | cut -d ':' -f 1)
 
-if [ $file == "/tmp/packages-puppy-1" ]; then
-    filedirectory="/root/.packages/Packages-puppy-2-official"
-elif [ $file == "/tmp/packages-puppy-2" ]; then
-    filedirectory="/root/.packages/Packages-puppy-3-official"
-elif [ $file == "/tmp/packages-puppy-3" ]; then
-    filedirectory="/root/.packages/Packages-puppy-4-official"
-elif [ $file == "/tmp/packages-puppy-4" ]; then
+if [ $file == "/tmp/packages-puppy-4" ]; then
     filedirectory="/root/.packages/Packages-puppy-5-official"
 elif [ $file == "/tmp/packages-puppy-5" ]; then
     filedirectory="/root/.packages/Packages-puppy-slacko-official"
@@ -75,7 +67,7 @@ elif [ $file == "/tmp/packages-puppy-8" ]; then
     filedirectory="/root/.packages/Packages-puppy-noarch-official"
 else
     fehler=$(echo $ausgabegrep | cut -d ':' -f 3)
-    echo $fehler " wasn't found"
+    echo "File wasn't found"
 fi
 
-echo $filedirectory
+Xdialog --title "Versions" --menubox "Installed Packages:" 0 0 4 "$FIRST" "$version"
