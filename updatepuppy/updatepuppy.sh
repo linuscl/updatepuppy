@@ -13,7 +13,6 @@
 # 8. Install the downloaded packages with petget
 ########################################################
 
-Xdialog --title "Welcome to the Puppy Update Manager!" --msgbox "Welcome to the Puppy Update Manager! Click 'OK' to continue." 0 0
 Xdialog --title "Update databases?" --yesno "Click 'Yes' to update the databases" 0 0
 case $? in
     0)
@@ -48,26 +47,52 @@ cut -d\| -f 2 /root/.packages/Packages-puppy-slacko14-official | grep -v '^$' > 
 cut -d\| -f 2 /root/.packages/Packages-puppy-common-official | grep -v '^$' > /tmp/packages-puppy-7
 cut -d\| -f 2 /root/.packages/Packages-puppy-noarch-official | grep -v '^$' > /tmp/packages-puppy-8
 
-FIRST=$(head -n 1 /tmp/packages-install | cut -d\| -f 1)
-version=$(head -n 1 /tmp/packages-install | cut -d\| -f 2)
+packages=( )
+while IFS='|' read -r name version; do
+  echo "Package $name is at version $version" >&2
+  packages+=( "$name" "$version" )
+done </tmp/packages-install
 
-ausgabegrep=$(grep -n -w $FIRST /tmp/packages-puppy-*)
+Xdialog --menubox "Installed packages:" 20 100 1 "${packages[@]}"
 
-file=$(echo $ausgabegrep | cut -d ':' -f 1)
+search=( )
+while IFS='|' read -r name version; do
+  search+=( "$name" )
+done </tmp/packages-install
 
-if [ $file == "/tmp/packages-puppy-4" ]; then
-    filedirectory="/root/.packages/Packages-puppy-5-official"
-elif [ $file == "/tmp/packages-puppy-5" ]; then
-    filedirectory="/root/.packages/Packages-puppy-slacko-official"
-elif [ $file == "/tmp/packages-puppy-6" ]; then
-    filedirectory="/root/.packages/Packages-puppy-slacko14-official"
-elif [ $file == "/tmp/packages-puppy-7" ]; then
-    filedirectory="/root/.packages/Packages-puppy-common-official"
-elif [ $file == "/tmp/packages-puppy-8" ]; then
-    filedirectory="/root/.packages/Packages-puppy-noarch-official"
-else
-    fehler=$(echo $ausgabegrep | cut -d ':' -f 3)
-    echo "File wasn't found"
-fi
+Xdialog --no-buttons --title "Wait" --infobox "Please wait..." 0 0 2000
 
-Xdialog --title "Versions" --menubox "Installed Packages:" 0 0 4 "$FIRST" "$version"
+avaiblepackages=( )
+
+for searching in "${search[@]}"; do
+
+    ausgabegrep=$(grep -n -w "$searching" /tmp/packages-puppy-* | sed -n '1p')
+
+    file=$(echo "$ausgabegrep" | cut -d ':' -f 1)
+
+    ausgabefile=$(echo "$ausgabegrep" | cut -d ':' -f 3)
+
+    if [ "$file" = "/tmp/packages-puppy-4" ]; then
+        filedirectory="/root/.packages/Packages-puppy-5-official"
+    elif [ "$file" = "/tmp/packages-puppy-5" ]; then
+        filedirectory="/root/.packages/Packages-puppy-slacko-official"
+    elif [ "$file" = "/tmp/packages-puppy-6" ]; then
+        filedirectory="/root/.packages/Packages-puppy-slacko14-official"
+    elif [ "$file" = "/tmp/packages-puppy-7" ]; then
+        filedirectory="/root/.packages/Packages-puppy-common-official"
+    elif [ "$file" = "/tmp/packages-puppy-8" ]; then
+        filedirectory="/root/.packages/Packages-puppy-noarch-official"
+    else
+        echo ""
+    fi
+    
+    if [ -n "$ausgabefile" ]; then
+        avaiblepackages+=( "$ausgabefile" "$filedirectory" )
+    else 
+        echo ""
+    fi
+
+done
+
+
+Xdialog --menubox "Avaible packages:" 20 100 1 "${avaiblepackages[@]}"
